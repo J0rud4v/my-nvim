@@ -6,6 +6,10 @@ return {
         end,
     },
     {
+      "mfussenegger/nvim-jdtls", -- Plugin oficial para jdtls
+      ft = "java",               -- Solo se carga para archivos Java
+    },
+    {
         "rcarriga/nvim-dap-ui",
         dependencies = {
             "mfussenegger/nvim-dap", -- Dependencia principal
