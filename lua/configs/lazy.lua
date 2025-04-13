@@ -21,18 +21,21 @@ return {
     end,
   },
   {
-    "mfussenegger/nvim-jdtls", -- Plugin oficial para jdtls
-    ft = "java",               -- Solo se carga para archivos Java
+    "mfussenegger/nvim-jdtls",
+    dependencies = {
+      "mfussenegger/nvim-dap"
+    },
+    ft = "java",
   },
   {
     "rcarriga/nvim-dap-ui",
     dependencies = {
-      "mfussenegger/nvim-dap", -- Dependencia principal
-      "nvim-neotest/nvim-nio", -- Nueva dependencia requerida
+      "mfussenegger/nvim-dap",
+      "nvim-neotest/nvim-nio",
     },
 
     config = function()
-      require("configs.dapui") -- Cargar la configuración de nvim-dap-ui
+      require("configs.dapui")
     end,
   },
   {

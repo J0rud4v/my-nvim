@@ -2,11 +2,11 @@ local cmp = require('cmp')
 local luasnip = require('luasnip')
 
 cmp.setup({
-  --snippet = {
-  --  expand = function(args)
-  --    luasnip.lsp_expand(args.body)
-  --  end,
-  --},
+  snippet = {
+    expand = function(args)
+      luasnip.lsp_expand(args.body)
+    end,
+  },
   mapping = {
     ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
@@ -40,9 +40,9 @@ cmp.setup({
     { name = 'nvim_lsp', priority = 3},
     { name = 'buffer', priority = 1},
     { name = 'path', priority = 2 },
-    --{ name = 'luasnip', priority = 4 },
+    { name = 'luasnip', priority = 4 },
   },
-  
+
   completion = {
     completeopt = 'menu,menuone,noinsert',  -- Cómo se muestra el menú de autocompletado
   },

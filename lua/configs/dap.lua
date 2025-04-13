@@ -2,40 +2,21 @@ local dap = require("dap")
 
 dap.adapters.python = {
   type = 'executable',
-  command = 'python',
+  command = vim.fn.stdpath("data") .. "/mason/packages/debugpy/venv/bin/python",
   args = { '-m', 'debugpy.adapter' }
 }
 dap.configurations.python = {
-        {
-          type = 'python',
-          request = 'launch',
-          name = 'Launch file',
-          program = '${file}',
-          pythonPath = function()
-            return '/usr/bin/python'  -- Ajusta esto a tu ruta de Python
-          end,
-        },
-      }
--- Configuración del adaptador para Java
-dap.adapters.java = {
-  type = "executable",
-  command = "java",
-  args = {
-    "-jar",
-    vim.fn.expand("~/.local/share/nvim/mason/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar"),
+  {
+    type = 'python',
+    request = 'launch',
+    name = 'Launch file',
+    program = '${file}',
+    pythonPath = function()
+      return '/usr/bin/python3'       -- Ajusta esto a tu ruta de Python
+    end,
   },
 }
 
--- Configuración de la depuración para Java
-dap.configurations.java = {
-  {
-    type = "java",
-    request = "launch",
-    name = "Debug (Attach) - Remote",
-    hostName = "127.0.0.1",
-    port = 5005,
-  },
-}
 
 -- Atajos de teclado para nvim-dap
 vim.keymap.set("n", "<F5>", dap.continue, { desc = "Iniciar/Continuar depuración" })
