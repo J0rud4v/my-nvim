@@ -1,4 +1,46 @@
 return {
+
+  {
+    "akinsho/bufferline.nvim",
+    version = "*",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      vim.opt.termguicolors = true
+      require("configs.bufferline")
+    end,
+  },
+  -- Instalacion de glow para vista previa de markdown
+  {
+    "ellisonleao/glow.nvim",
+    config = function()
+      require("glow").setup({
+        style = "dark", -- o "light" si usas fondo claro
+        width = 120,    -- ancho del buffer flotante
+        border = "none"
+      })
+    end
+  },
+  -- Instalacion de la ia windsurf IA de autocompletado
+  {
+    "Exafunction/windsurf.nvim",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "hrsh7th/nvim-cmp",
+    },
+    ft = { "java", "lua", "php" },
+    config = function()
+      vim.g.codeium_enabled = false
+      require("configs.windsurf").setup()
+    end,
+  },
+  {
+    'goerz/jupytext.nvim',
+    version = '0.2.0',
+    opts = {
+      jupytext = 'jupytext',
+      format = 'py:percent',
+    },
+  },
   {
     "windwp/nvim-autopairs",
     event = "InsertEnter",
@@ -17,7 +59,7 @@ return {
   {
     "mfussenegger/nvim-dap",
     config = function()
-      require("configs.dap") -- Cargar la configuración de nvim-dap
+      require("configs.dap")
     end,
   },
   {
@@ -49,7 +91,7 @@ return {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
-      require('lualine').setup("config.lualine")
+      require('configs.lualine')
     end
   },
   {
@@ -62,7 +104,7 @@ return {
       "hrsh7th/cmp-cmdline"
     },
     config = function()
-      require("configs.nvimcmp") -- Carga la configuración
+      require("configs.nvimcmp")
     end
   },
   {
@@ -126,6 +168,10 @@ return {
   },
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = 'master',
+    lazy = false,
+    build = ":TSUpdate",
+    event = { "BufReadPost", "BufNewFile" },
     opts = {
       ensure_installed = {
         "vim",
@@ -140,8 +186,16 @@ return {
         "cpp",
         "python",
         "java",
+        "javadoc",
         "yaml",
-        "bash"
+        "bash",
+        "json",
+      },
+      highlight = {
+        enable = true,
+      },
+      indent = {
+        enable = true,
       },
     },
   },
