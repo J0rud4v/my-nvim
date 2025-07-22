@@ -14,10 +14,10 @@ dapui.setup({
   layouts = {
     {
       elements = {
-        { id = "scopes",      size = 0.25 },
-        { id = "breakpoints", size = 0.25 },
         { id = "stacks",      size = 0.25 },
+        { id = "breakpoints", size = 0.25 },
         { id = "watches",     size = 0.25 },
+        { id = "scopes",      size = 0.25 },
       },
       position = "left",
       size = 40,
@@ -41,9 +41,7 @@ dapui.setup({
   },
 })
 
--- Automáticamente abrir/cerrar nvim-dap-ui al iniciar/finalizar la depuración
---local dap = require("dap")
--- Helper function for creating keymaps
+-- Helper function for creating keymaps 
 local function nnoremap(rhs, lhs, bufopts, desc)
   bufopts.desc = desc
   vim.keymap.set("n", rhs, lhs, bufopts)
@@ -51,6 +49,11 @@ end
 local opts = { noremap = true, silent = true }
 nnoremap("<leader>od", function() dapui.open() end, opts, "Open DAP UI")
 nnoremap("<leader>cd", function() dapui.close() end, opts, "Close DAP UI")
+nnoremap("<leader>oc", function() dapui.open(2) end, opts, "Open Console and REPL")
+
+
+--local dap = require("dap")
+-- Automáticamente abrir/cerrar nvim-dap-ui al iniciar/finalizar la depuración
 --dap.listeners.after.event_initialized["dapui_config"] = function()
 --  dapui.open()
 --end

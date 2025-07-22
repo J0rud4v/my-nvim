@@ -1,6 +1,9 @@
 local lspconfig = require("lspconfig")
 local jdtls = require("jdtls")
 local jdtls_dap = require("jdtls.dap")
+
+local uv = vim.loop
+
 local mason_path = vim.fn.stdpath("data") .. "/mason"
 
 -- Global mappings.
@@ -42,8 +45,6 @@ end
 local on_attach_java = function(client, bufnr)
   on_attach(client, bufnr)
 
-  jdtls.setup_dap({ hotcodereplace = "auto" })
-  jdtls_dap.setup_dap_main_class_configs()
   jdtls.setup.add_commands()
 
   local bufopts = { noremap = true, silent = true, buffer = bufnr }
@@ -54,8 +55,16 @@ local on_attach_java = function(client, bufnr)
     { noremap = true, silent = true, buffer = bufnr, desc = "Extract method" })
 end
 
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+
+lspconfig.ts_ls.setup({
+  simple_file_support = true,
+  capabilities = capabilities,
+  on_attach = on_attach,
+})
 
 lspconfig.bashls.setup({
   simple_file_support = true,
@@ -67,6 +76,12 @@ lspconfig.pyright.setup({
   simple_file_support = true,
   on_attach = on_attach,
   capabilities = capabilities,
+})
+
+lspconfig.html.setup({
+  simple_file_support = true,
+  capabilities = capabilities,
+  on_attach = on_attach,
 })
 
 lspconfig.lua_ls.setup({
@@ -92,15 +107,15 @@ lspconfig.lua_ls.setup({
 
 
 
-local uv = vim.loop
 local debug_path = vim.fn.glob(mason_path ..
-"/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar")
+  "/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar")
 local test_bundles = vim.split(vim.fn.glob(mason_path .. "/packages/java-test/extension/server/*.jar"), "\n")
 local bundles = {}
 if debug_path ~= "" then
   table.insert(bundles, debug_path)
 end
 
+-- Root dir finder
 local function limited_root_pattern(markers, max_levels)
   local path = vim.fn.expand("%:p:h")
   local levels = 0
@@ -117,28 +132,95 @@ local function limited_root_pattern(markers, max_levels)
 
   return nil
 end
-local root_dir = limited_root_pattern(
-{ ".git", "build.gradle", "build.gradle.kts", "build.xml", "pom.xml", "settings.gradle", "settings.gradle.kts" }, 5) or
-vim.fn.getcwd()
 
-lspconfig.jdtls.setup({
-  simple_file_support = true,
-  capabilities = capabilities,
-  on_attach = on_attach_java,
-  root_dir = root_dir,
+--local root_dir = limited_root_pattern(
+--{ ".git", "build.gradle", "build.gradle.kts", "build.xml", "pom.xml", "settings.gradle", "settings.gradle.kts" }, 5) or vim.fn.getcwd()
+vim.list_extend(bundles, test_bundles)
 
-  vim.list_extend(bundles, test_bundles),
-  settings = {
-    java = {
-      configuration = {
-        updateBuildConfiguration = "interactive",
+--lspconfig.jdtls.setup({
+--  simple_file_support = true,
+--  capabilities = capabilities,
+--  on_attach = on_attach_java,
+--  root_dir = root_dir,
+--
+--  --vim.list_extend(bundles, test_bundles),
+--  settings = {
+--    java = {
+--      configuration = {
+--        updateBuildConfiguration = "interactive",
+--      },
+--      inlayHints = {
+--        parameterNames = { enabled = "all" },
+--      },
+--    },
+--  },
+--  init_options = {
+--    bundles = bundles,
+--  },
+--})
+
+
+-- ⚠️ Replace previous lspconfig.jdtls.setup with nvim-jdtls start_or_attach
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "java",
+  callback = function()
+    local root_dir = limited_root_pattern({
+      ".git", "build.gradle", "build.gradle.kts", "build.xml", "pom.xml", "settings.gradle", "settings.gradle.kts"
+    }, 5) or vim.fn.getcwd()
+
+    local workspace_dir = vim.fn.stdpath('data') ..
+        '/site/java/workspace-root/' .. vim.fn.fnamemodify(root_dir, ':p:h:t')
+
+    local config = {
+      cmd = {
+        'java',
+        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+        '-Dosgi.bundles.defaultStartLevel=4',
+        '-Declipse.product=org.eclipse.jdt.ls.core.product',
+        '-Dlog.protocol=true',
+        '-Dlog.level=ALL',
+        '-Xms2g',
+        '--add-modules=ALL-SYSTEM',
+        '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+
+        --'--module-path', '/opt/javafx-sdk-21.0.7/lib/',
+        --'--add-modules', 'javafx.controls,javafx.fxml,javafx.graphics,javafx.media',
+
+        '-jar', vim.fn.glob(mason_path .. '/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
+        '-configuration', mason_path .. '/packages/jdtls/config_' .. vim.loop.os_uname().sysname:lower(),
+        '-data', workspace_dir,
       },
-      inlayHints = {
-        parameterNames = { enabled = "all" },
+
+      root_dir = root_dir,
+      capabilities = capabilities,
+      on_attach = on_attach_java,
+
+      settings = {
+        java = {
+          configuration = {
+            updateBuildConfiguration = "interactive",
+          },
+          import = {
+            maven = { enabled = true },
+          },
+          inlayHints = {
+            parameterNames = { enabled = "all" },
+          },
+        },
       },
-    },
-  },
-  init_options = {
-    bundles = bundles,
-  },
+
+      init_options = {
+        bundles = bundles,
+      },
+    }
+
+    require('jdtls').start_or_attach(config)
+    jdtls.setup_dap({ hotcodereplace = "auto" })
+
+    vim.defer_fn(function()
+      require('jdtls.dap').setup_dap_main_class_configs()
+    end, 500)
+
+  end,
 })
