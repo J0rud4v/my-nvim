@@ -142,15 +142,6 @@ Instalar Glow en Debian/Ubuntu:
 
 ---
 
-## 📷 Capturas (Opcional)
-
-Puedes agregar capturas con:
-
-    ![captura-1](ruta/a/imagen1.png)
-    ![captura-2](ruta/a/imagen2.png)
-
----
-
 ## 📄 Licencia
 
 Este proyecto está bajo licencia **MIT**.
