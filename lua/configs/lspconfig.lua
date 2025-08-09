@@ -45,6 +45,7 @@ end
 local on_attach_java = function(client, bufnr)
   on_attach(client, bufnr)
 
+  jdtls.setup_dap({ hotcodereplace = "auto" })
   jdtls.setup.add_commands()
 
   local bufopts = { noremap = true, silent = true, buffer = bufnr }
@@ -59,6 +60,11 @@ end
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 capabilities.textDocument.completion.completionItem.snippetSupport = true
 
+lspconfig.lemminx.setup({
+  simple_file_support = true,
+  capabilities = capabilities,
+  on_attach = on_attach,
+})
 
 lspconfig.ts_ls.setup({
   simple_file_support = true,
@@ -181,15 +187,14 @@ vim.api.nvim_create_autocmd("FileType", {
         '-Dlog.level=ALL',
         '-Xms2g',
         '--add-modules=ALL-SYSTEM',
+        '-jar', vim.fn.glob(mason_path .. '/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
+        '-configuration', mason_path .. '/packages/jdtls/config_' .. vim.loop.os_uname().sysname:lower(),
+        '-data', workspace_dir,
         '--add-opens', 'java.base/java.util=ALL-UNNAMED',
         '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
 
         --'--module-path', '/opt/javafx-sdk-21.0.7/lib/',
         --'--add-modules', 'javafx.controls,javafx.fxml,javafx.graphics,javafx.media',
-
-        '-jar', vim.fn.glob(mason_path .. '/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
-        '-configuration', mason_path .. '/packages/jdtls/config_' .. vim.loop.os_uname().sysname:lower(),
-        '-data', workspace_dir,
       },
 
       root_dir = root_dir,
@@ -215,12 +220,15 @@ vim.api.nvim_create_autocmd("FileType", {
       },
     }
 
-    require('jdtls').start_or_attach(config)
-    jdtls.setup_dap({ hotcodereplace = "auto" })
+    jdtls.start_or_attach(config)
 
-    vim.defer_fn(function()
-      require('jdtls.dap').setup_dap_main_class_configs()
-    end, 500)
-
+    local bufnr = vim.api.nvim_get_current_buf()
+    local clients = vim.lsp.get_clients({ bufnr = bufnr })
+    for _, client in ipairs(clients) do
+      if client.name == "jdtls" then
+        require('jdtls.dap').setup_dap_main_class_configs()
+        break
+      end
+    end
   end,
 })

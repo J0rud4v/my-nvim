@@ -1,6 +1,27 @@
 return {
 
   {
+    'tpope/vim-fugitive',
+    cmd = { 'Git', 'Gdiffsplit', 'Gvdiffsplit', 'Gwrite' } -- carga solo cuando uses estos comandos
+  },
+
+  {
+    'lewis6991/gitsigns.nvim',
+    config = function()
+      require('gitsigns').setup {
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+
+          vim.keymap.set('n', '<leader>hp', gs.preview_hunk, { buffer = bufnr })
+          vim.keymap.set('n', '<leader>hs', gs.stage_hunk, { buffer = bufnr })
+          vim.keymap.set('n', '[c', gs.prev_hunk, { buffer = bufnr })
+          vim.keymap.set('n', ']c', gs.next_hunk, { buffer = bufnr })
+        end
+      }
+    end
+  },
+
+  {
     "akinsho/bufferline.nvim",
     version = "*",
     dependencies = { "nvim-tree/nvim-web-devicons" },

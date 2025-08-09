@@ -12,11 +12,12 @@ dap.configurations.python = {
     name = 'Launch file',
     program = '${file}',
     pythonPath = function()
-      return '/usr/bin/python3'       -- Ajusta esto a tu ruta de Python
+      return '/usr/bin/python3' -- Ajusta esto a tu ruta de Python
     end,
   },
 }
 
+--require('jdtls.dap').setup_dap_main_class_configs()
 
 -- Atajos de teclado para nvim-dap
 vim.keymap.set("n", "<F5>", dap.continue, { desc = "Iniciar/Continuar depuración" })
